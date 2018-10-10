@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/rcrowley/go-metrics"
+	"github.com/mia0x75/go-metrics"
 )
 
 type exp struct {

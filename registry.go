@@ -48,6 +48,12 @@ type Registry interface {
 
 	// Unregister all metrics.  (Mostly for testing.)
 	UnregisterAll()
+
+	// Get metrics
+	Values() interface{}
+
+	// Get metrics number
+	Size() int64
 }
 
 // The standard implementation of a Registry is a mutex-protected map
@@ -64,7 +70,10 @@ func NewRegistry() Registry {
 
 // Call the given function for each registered metric.
 func (r *StandardRegistry) Each(f func(string, interface{})) {
-	for name, i := range r.registered() {
+	r.mutex.RLock()
+	cs := r.registered()
+	r.mutex.RUnlock()
+	for name, i := range cs {
 		f(name, i)
 	}
 }
@@ -200,6 +209,13 @@ func (r *StandardRegistry) UnregisterAll() {
 	}
 }
 
+// size of my metrics
+func (r *StandardRegistry) Size() int64 {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+	return int64(len(r.metrics))
+}
+
 func (r *StandardRegistry) register(name string, i interface{}) error {
 	if _, ok := r.metrics[name]; ok {
 		return DuplicateMetric(name)
@@ -212,8 +228,6 @@ func (r *StandardRegistry) register(name string, i interface{}) error {
 }
 
 func (r *StandardRegistry) registered() map[string]interface{} {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
 	metrics := make(map[string]interface{}, len(r.metrics))
 	for name, i := range r.metrics {
 		metrics[name] = i
@@ -320,6 +334,15 @@ func (r *PrefixedRegistry) UnregisterAll() {
 	r.underlying.UnregisterAll()
 }
 
+func (r *PrefixedRegistry) Values() interface{} {
+	return r.underlying.Values()
+}
+
+// size of my metrics
+func (r *PrefixedRegistry) Size() int64 {
+	return r.underlying.Size()
+}
+
 var DefaultRegistry Registry = NewRegistry()
 
 // Call the given function for each registered metric.
@@ -360,4 +383,9 @@ func RunHealthchecks() {
 // Unregister the metric with the given name.
 func Unregister(name string) {
 	DefaultRegistry.Unregister(name)
+}
+
+// Get metrics number
+func Size() int64 {
+	return DefaultRegistry.Size()
 }

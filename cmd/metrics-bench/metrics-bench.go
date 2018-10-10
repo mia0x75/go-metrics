@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/rcrowley/go-metrics"
-	"time"
+
+	"github.com/mia0x75/go-metrics"
 )
 
 func main() {
@@ -16,5 +16,4 @@ func main() {
 		r.Register(fmt.Sprintf("histogram-exp-%d", i), metrics.NewHistogram(metrics.NewExpDecaySample(1028, 0.015)))
 		r.Register(fmt.Sprintf("meter-%d", i), metrics.NewMeter())
 	}
-	time.Sleep(600e9)
 }

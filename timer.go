@@ -17,6 +17,7 @@ type Timer interface {
 	Rate5() float64
 	Rate15() float64
 	RateMean() float64
+	RateStep() float64
 	Snapshot() Timer
 	StdDev() float64
 	Stop()
@@ -113,6 +114,8 @@ func (NilTimer) Rate15() float64 { return 0.0 }
 // RateMean is a no-op.
 func (NilTimer) RateMean() float64 { return 0.0 }
 
+func (NilTimer) RateStep() float64 { return 0.0 }
+
 // Snapshot is a no-op.
 func (NilTimer) Snapshot() Timer { return NilTimer{} }
 
@@ -194,6 +197,10 @@ func (t *StandardTimer) Rate15() float64 {
 // RateMean returns the meter's mean rate of events per second.
 func (t *StandardTimer) RateMean() float64 {
 	return t.meter.RateMean()
+}
+
+func (t *StandardTimer) RateStep() float64 {
+	return t.meter.RateStep()
 }
 
 // Snapshot returns a read-only copy of the timer.
@@ -295,6 +302,8 @@ func (t *TimerSnapshot) Rate15() float64 { return t.meter.Rate15() }
 // RateMean returns the meter's mean rate of events per second at the time the
 // snapshot was taken.
 func (t *TimerSnapshot) RateMean() float64 { return t.meter.RateMean() }
+
+func (t *TimerSnapshot) RateStep() float64 { return t.meter.RateStep() }
 
 // Snapshot returns the snapshot.
 func (t *TimerSnapshot) Snapshot() Timer { return t }
